@@ -32,6 +32,20 @@
 			"command": "echo Build complete! (Python projects typically do not require building, but this will verify structure)",
 			"args": [],
 			"isBackground": false
+		},
+		{
+			"label": "Build Project",
+			"type": "shell",
+			"command": "echo Build complete! (Python projects typically do not require building, but this will verify structure)",
+			"args": [],
+			"isBackground": false
+		},
+		{
+			"label": "Build Project",
+			"type": "shell",
+			"command": "echo Build complete! (Python projects typically do not require building, but this will verify structure)",
+			"args": [],
+			"isBackground": false
 		}
 	]
 }

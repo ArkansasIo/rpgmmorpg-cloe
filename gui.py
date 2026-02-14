@@ -1,3 +1,4 @@
+from PyQt5.QtWidgets import QMessageBox, QFileDialog, QInputDialog
 from PyQt5.QtGui import QPainter, QColor, QFont
 # Ensure QWidget is imported before MapRenderWidget
 from PyQt5.QtWidgets import QWidget
@@ -111,12 +112,57 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1024, 700)
         self.showMaximized()
 
+
         # Top menu bar
         self.menu = self.menuBar()
+
+        # File menu
         self.file_menu = self.menu.addMenu('File')
-        self.exit_action = QAction('Exit', self)
-        self.exit_action.triggered.connect(self.close)
-        self.file_menu.addAction(self.exit_action)
+        self.file_menu.addAction('New', self.action_new)
+        self.file_menu.addAction('Open...', self.action_open)
+        self.file_menu.addAction('Save...', self.action_save)
+        self.file_menu.addAction('Export...', self.action_export)
+        self.file_menu.addSeparator()
+        self.file_menu.addAction('Exit', self.close)
+
+
+        # Generators menu (actions added after widget setup)
+        self.gen_menu = self.menu.addMenu('Generators')
+
+
+        # Tools menu (future stubs)
+        self.tools_menu = self.menu.addMenu('Tools')
+        self.tools_menu.addAction('Import...', self.action_import)
+        self.tools_menu.addAction('Settings...', self.action_settings)
+
+        # Help menu
+        self.help_menu = self.menu.addMenu('Help')
+        self.help_menu.addAction('About', self.action_about)
+        self.help_menu.addAction('Help', self.action_help)
+
+    def action_new(self):
+        QMessageBox.information(self, 'New', 'New project (stub).')
+
+    def action_open(self):
+        QFileDialog.getOpenFileName(self, 'Open File', '', 'All Files (*)')
+
+    def action_save(self):
+        QFileDialog.getSaveFileName(self, 'Save File', '', 'All Files (*)')
+
+    def action_export(self):
+        QFileDialog.getSaveFileName(self, 'Export File', '', 'PNG Image (*.png);;All Files (*)')
+
+    def action_import(self):
+        QFileDialog.getOpenFileName(self, 'Import File', '', 'All Files (*)')
+
+    def action_settings(self):
+        QMessageBox.information(self, 'Settings', 'Settings dialog (stub).')
+
+    def action_about(self):
+        QMessageBox.about(self, 'About', 'Procedural Generator Suite\nVersion 1.0\nPowered by PyQt5')
+
+    def action_help(self):
+        QMessageBox.information(self, 'Help', 'Help and documentation (stub).')
 
         # Central widget with horizontal layout
         main_widget = QWidget()
@@ -175,21 +221,35 @@ class MainWindow(QMainWindow):
         # Central stacked widget
         self.stack = QStackedWidget()
         self.main_menu = MainMenu(self)
-        self.city_screen = GeneratorScreen('city')
-        self.dungeon_screen = GeneratorScreen('dungeon')
-        self.village_screen = GeneratorScreen('village')
+        self.generator_screens = {
+            'city': GeneratorScreen('city'),
+            'dungeon': GeneratorScreen('dungeon'),
+            'village': GeneratorScreen('village'),
+            'maze': GeneratorScreen('maze'),
+            'earthlike': GeneratorScreen('earthlike'),
+            'dnd': GeneratorScreen('dnd5e'),
+            'fantasy': GeneratorScreen('fantasy'),
+            'desert': GeneratorScreen('desert'),
+        }
         self.stack.addWidget(self.main_menu)
-        self.stack.addWidget(self.city_screen)
-        self.stack.addWidget(self.dungeon_screen)
-        self.stack.addWidget(self.village_screen)
+        for screen in self.generator_screens.values():
+            self.stack.addWidget(screen)
 
         # Add widgets to main layout
         main_layout.addWidget(self.left_sidebar)
         main_layout.addWidget(self.stack)
         main_layout.setStretch(1, 1)
 
+
         self.setCentralWidget(main_widget)
         self.show_main_menu()
+
+        # Now that self.stack and screens exist, connect generator menu actions
+        self.gen_menu.addAction('City', lambda: self.show_generator('city'))
+        self.gen_menu.addAction('Dungeon', lambda: self.show_generator('dungeon'))
+        self.gen_menu.addAction('Village', lambda: self.show_generator('village'))
+        self.gen_menu.addAction('Maze', lambda: self.show_generator('maze'))
+        self.gen_menu.addAction('Earthlike', lambda: self.show_generator('earthlike'))
 
         # Connect sidebar actions
         city_gen_action.triggered.connect(lambda: self.show_generator('city'))
@@ -200,12 +260,11 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentWidget(self.main_menu)
 
     def show_generator(self, gen_type):
-        if gen_type == 'city':
-            self.stack.setCurrentWidget(self.city_screen)
-        elif gen_type == 'dungeon':
-            self.stack.setCurrentWidget(self.dungeon_screen)
-        elif gen_type == 'village':
-            self.stack.setCurrentWidget(self.village_screen)
+        screen = self.generator_screens.get(gen_type)
+        if screen:
+            self.stack.setCurrentWidget(screen)
+        else:
+            QMessageBox.warning(self, 'Not Implemented', f'Generator "{gen_type}" not implemented.')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
