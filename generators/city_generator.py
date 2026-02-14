@@ -23,6 +23,66 @@ class CityGenerator:
         self.river = []
         self.districts = []
 
+    def get_data(self):
+        """
+        Returns a dictionary with all city features for programmatic use.
+        """
+        return {
+            'center': (self.center.x, self.center.y),
+            'roads': [((r.start.x, r.start.y), (r.end.x, r.end.y)) for r in self.roads],
+            'walls': self.walls,
+            'gates': self.gates,
+            'market': self.market,
+            'river': self.river,
+            'districts': self.districts
+        }
+
+    def get_graphical_map(self, cell_size=18):
+        """
+        Returns a 2D list of characters for graphical rendering (MapRenderWidget-compatible).
+        """
+        # This is the same as get_map, but returns a 2D list instead of list of strings
+        size = 41
+        grid = [['.' for _ in range(size)] for _ in range(size)]
+        cx, cy = size // 2, size // 2
+        for x, y in self.river:
+            rx = int(cx + (x - self.center.x) / 5)
+            ry = int(cy + (y - self.center.y) / 5)
+            if 0 <= rx < size and 0 <= ry < size:
+                grid[ry][rx] = '~'
+        for x, y in self.walls:
+            wx = int(cx + (x - self.center.x) / 5)
+            wy = int(cy + (y - self.center.y) / 5)
+            if 0 <= wx < size and 0 <= wy < size:
+                grid[wy][wx] = 'W'
+        for x, y in self.gates:
+            gx = int(cx + (x - self.center.x) / 5)
+            gy = int(cy + (y - self.center.y) / 5)
+            if 0 <= gx < size and 0 <= gy < size:
+                grid[gy][gx] = 'G'
+        grid[cy][cx] = 'M'
+        for road in self.roads:
+            ex = int(cx + (road.end.x - self.center.x) / 5)
+            ey = int(cy + (road.end.y - self.center.y) / 5)
+            if 0 <= ex < size and 0 <= ey < size:
+                grid[ey][ex] = 'R'
+        for d in self.districts:
+            dx = int(cx + (d['center'][0] - self.center.x) / 5)
+            dy = int(cy + (d['center'][1] - self.center.y) / 5)
+            if 0 <= dx < size and 0 <= dy < size:
+                grid[dy][dx] = d['name'][0]
+        return grid
+
+    def get_all_outputs(self):
+        """
+        Returns a dict with 'ascii', 'data', and 'graphical' keys for all output types.
+        """
+        return {
+            'ascii': self.get_map(),
+            'data': self.get_data(),
+            'graphical': self.get_graphical_map()
+        }
+
     def generate_city(self, radius=100, num_roads=8):
         self.roads = []
         self.blocks = []

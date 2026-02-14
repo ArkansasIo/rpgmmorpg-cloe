@@ -13,9 +13,20 @@ app = Flask(__name__)
 def generate_city():
     radius = int(request.args.get('radius', 100))
     num_roads = int(request.args.get('num_roads', 8))
+    output_type = request.args.get('output', 'ascii')  # ascii, data, graphical, all
     city = CityGenerator()
-    roads = city.generate_city(radius, num_roads)
-    return jsonify({'roads': [ {'start': {'x': r.start.x, 'y': r.start.y}, 'end': {'x': r.end.x, 'y': r.end.y}} for r in roads ]})
+    city.generate_city(radius, num_roads)
+    outputs = city.get_all_outputs()
+    if output_type == 'ascii':
+        return jsonify({'ascii': outputs['ascii']})
+    elif output_type == 'data':
+        return jsonify({'data': outputs['data']})
+    elif output_type == 'graphical':
+        return jsonify({'graphical': outputs['graphical']})
+    elif output_type == 'all':
+        return jsonify(outputs)
+    else:
+        return jsonify({'ascii': outputs['ascii']})
 
 @app.route('/api/dungeon', methods=['GET'])
 def generate_dungeon():
