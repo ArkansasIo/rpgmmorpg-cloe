@@ -1,21 +1,19 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QMenuBar, QAction, QStackedWidget
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel,
+    QMenuBar, QAction, QStackedWidget, QHBoxLayout, QFrame, QToolButton, QMenu
+)
 import requests
 
 class MainMenu(QWidget):
     def __init__(self, parent):
         super().__init__()
         layout = QVBoxLayout()
-        self.city_btn = QPushButton('City Generator')
-        self.dungeon_btn = QPushButton('Dungeon Generator')
-        self.village_btn = QPushButton('Village Generator')
-        layout.addWidget(self.city_btn)
-        layout.addWidget(self.dungeon_btn)
-        layout.addWidget(self.village_btn)
+        label = QLabel('Welcome to the Procedural Generator Suite!')
+        label.setStyleSheet('font-size: 18px; font-weight: bold;')
+        layout.addWidget(label)
+        layout.addStretch()
         self.setLayout(layout)
-        self.city_btn.clicked.connect(lambda: parent.show_generator('city'))
-        self.dungeon_btn.clicked.connect(lambda: parent.show_generator('dungeon'))
-        self.village_btn.clicked.connect(lambda: parent.show_generator('village'))
 
 class GeneratorScreen(QWidget):
     def __init__(self, gen_type):
@@ -39,15 +37,63 @@ class GeneratorScreen(QWidget):
         except Exception as e:
             self.result.setText(f'Error: {e}')
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Procedural Generator Suite')
+        self.showMaximized()
+
+        # Top menu bar
         self.menu = self.menuBar()
         self.file_menu = self.menu.addMenu('File')
         self.exit_action = QAction('Exit', self)
         self.exit_action.triggered.connect(self.close)
         self.file_menu.addAction(self.exit_action)
+
+        # Central widget with horizontal layout
+        main_widget = QWidget()
+        main_layout = QHBoxLayout(main_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Left sidebar (main and submenus)
+        self.left_sidebar = QFrame()
+        self.left_sidebar.setFrameShape(QFrame.StyledPanel)
+        self.left_sidebar.setFixedWidth(200)
+        left_layout = QVBoxLayout(self.left_sidebar)
+        left_layout.setContentsMargins(10, 10, 10, 10)
+
+        # Main menu buttons with submenus
+        self.city_menu_btn = QToolButton()
+        self.city_menu_btn.setText('City')
+        self.city_menu_btn.setPopupMode(QToolButton.MenuButtonPopup)
+        city_menu = QMenu()
+        city_gen_action = QAction('City Generator', self)
+        city_menu.addAction(city_gen_action)
+        self.city_menu_btn.setMenu(city_menu)
+
+        self.dungeon_menu_btn = QToolButton()
+        self.dungeon_menu_btn.setText('Dungeon')
+        self.dungeon_menu_btn.setPopupMode(QToolButton.MenuButtonPopup)
+        dungeon_menu = QMenu()
+        dungeon_gen_action = QAction('Dungeon Generator', self)
+        dungeon_menu.addAction(dungeon_gen_action)
+        self.dungeon_menu_btn.setMenu(dungeon_menu)
+
+        self.village_menu_btn = QToolButton()
+        self.village_menu_btn.setText('Village')
+        self.village_menu_btn.setPopupMode(QToolButton.MenuButtonPopup)
+        village_menu = QMenu()
+        village_gen_action = QAction('Village Generator', self)
+        village_menu.addAction(village_gen_action)
+        self.village_menu_btn.setMenu(village_menu)
+
+        left_layout.addWidget(self.city_menu_btn)
+        left_layout.addWidget(self.dungeon_menu_btn)
+        left_layout.addWidget(self.village_menu_btn)
+        left_layout.addStretch()
+
+        # Central stacked widget
         self.stack = QStackedWidget()
         self.main_menu = MainMenu(self)
         self.city_screen = GeneratorScreen('city')
@@ -57,8 +103,19 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.city_screen)
         self.stack.addWidget(self.dungeon_screen)
         self.stack.addWidget(self.village_screen)
-        self.setCentralWidget(self.stack)
+
+        # Add widgets to main layout
+        main_layout.addWidget(self.left_sidebar)
+        main_layout.addWidget(self.stack)
+        main_layout.setStretch(1, 1)
+
+        self.setCentralWidget(main_widget)
         self.show_main_menu()
+
+        # Connect sidebar actions
+        city_gen_action.triggered.connect(lambda: self.show_generator('city'))
+        dungeon_gen_action.triggered.connect(lambda: self.show_generator('dungeon'))
+        village_gen_action.triggered.connect(lambda: self.show_generator('village'))
 
     def show_main_menu(self):
         self.stack.setCurrentWidget(self.main_menu)

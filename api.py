@@ -5,6 +5,7 @@ from generators.dungeon_generator import DungeonGenerator
 from generators.village_generator import VillageGenerator
 from generators.maze_generator import MazeGenerator
 from generators.algo_generator import AlgoGenerator
+from generators.earthlike_generator import EarthlikeGenerator
 
 app = Flask(__name__)
 
@@ -48,6 +49,20 @@ def generate_algo():
     algo = AlgoGenerator(size)
     data = algo.generate()
     return jsonify({'data': data})
+
+# Earthlike map generator endpoint
+@app.route('/api/earthlike', methods=['GET'])
+def generate_earthlike():
+    size = int(request.args.get('size', 50))
+    seed = request.args.get('seed', None)
+    if seed is not None:
+        try:
+            seed = int(seed)
+        except ValueError:
+            seed = None
+    earth = EarthlikeGenerator(size, seed)
+    earth.generate()
+    return jsonify({'map': earth.get_map()})
 
 if __name__ == '__main__':
     app.run(debug=True)
